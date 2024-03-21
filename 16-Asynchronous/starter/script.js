@@ -447,6 +447,10 @@ createImage('img/img-1.jpg').then((img) => {
         console.log(`Error happened!!!!!!`, err);
     })
 
+
+
+adding more comment to push the changes in git hub
+
 */
 
 
