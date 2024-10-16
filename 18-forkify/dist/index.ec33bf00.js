@@ -604,6 +604,7 @@ const controlRecipe = async ()=>{
         //1. getting recipe
         (0, _recipeViewJsDefault.default).renderSpinner();
         const id = window.location.hash.slice(1);
+        console.log(id);
         if (!id) return;
         //Loading Recipe
         await _modalJs.loadRecipe(id);
@@ -635,8 +636,15 @@ const controlPagination = function(gotoPage) {
     //4)Render new pagination btns
     (0, _paginationViewJsDefault.default).render(_modalJs.state.search);
 };
+const controlServings = function(newServings) {
+    //Update the recipe servings(in state)
+    _modalJs.updateServings(newServings);
+    //Update the  recipe view as well
+    (0, _recipeViewJsDefault.default).render(_modalJs.state.recipe);
+};
 const init = function() {
     (0, _recipeViewJsDefault.default).addHandlerRender(controlRecipe);
+    (0, _recipeViewJsDefault.default).appHandlerUpdateServings(controlServings);
     (0, _searchViewJsDefault.default).addHandlerSearch(controlSearchResults);
     (0, _paginationViewJsDefault.default).addHandlerClick(controlPagination);
 };
@@ -2497,6 +2505,7 @@ parcelHelpers.export(exports, "state", ()=>state);
 parcelHelpers.export(exports, "loadRecipe", ()=>loadRecipe);
 parcelHelpers.export(exports, "loadSearchResults", ()=>loadSearchResults);
 parcelHelpers.export(exports, "getSearchResultsPage", ()=>getSearchResultsPage);
+parcelHelpers.export(exports, "updateServings", ()=>updateServings);
 var _regeneratorRuntime = require("regenerator-runtime");
 var _config = require("./config");
 var _helper = require("./helper");
@@ -2555,6 +2564,10 @@ const getSearchResultsPage = function(page = state.search.page) {
     const end = page * state.search.resultsPerPage;
     return state.search.results.slice(start, end);
 };
+const updateServings = function(newServings) {
+    state.recipe.ingredients.forEach((ing)=>ing.quantity = (ing.quantity + newServings) / state.recipe.servings);
+    state.recipe.servings = newServings;
+};
 
 },{"regenerator-runtime":"dXNgZ","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","./config":"70DKu","./helper":"gtnjc","./views/recipeView":"3QIHi"}],"70DKu":[function(require,module,exports) {
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
@@ -2565,7 +2578,7 @@ parcelHelpers.export(exports, "API_KEY", ()=>API_KEY);
 parcelHelpers.export(exports, "RES_PER_PAGE", ()=>RES_PER_PAGE);
 const API_URL = `https://forkify-api.herokuapp.com/api/v2/recipes`;
 const TIMEOUT_SEC = 10;
-const API_KEY = `&key=e32a0fd5-7b55-4e7b-a599-60dd80d80692`;
+const API_KEY = `&key=cac192bc-179b-4e6e-8b69-84af4da27105`;
 const RES_PER_PAGE = 9;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gtnjc":[function(require,module,exports) {
@@ -2614,6 +2627,15 @@ class RecipeView extends (0, _viewJsDefault.default) {
             "load"
         ].forEach((ev)=>window.addEventListener(ev, handler));
     }
+    appHandlerUpdateServings(handler) {
+        this._parentElement.addEventListener("click", function(e) {
+            const btn = e.target.closest(".btn--update-servings");
+            if (!btn) return;
+            // console.log(btn);
+            const { updateTo } = btn.dataset;
+            if (+updateTo > 1) handler(+updateTo);
+        });
+    }
     _generateMarkup() {
         return `
         <figure class="recipe__fig">
@@ -2639,12 +2661,12 @@ class RecipeView extends (0, _viewJsDefault.default) {
           <span class="recipe__info-text">servings</span>
     
           <div class="recipe__info-buttons">
-            <button class="btn--tiny btn--increase-servings">
+            <button class="btn--tiny btn--update-servings" data-update-to="${this._data.servings - 1}" >
               <svg>
                 <use href="${0, _iconsSvgDefault.default}#icon-minus-circle"></use>
               </svg>
             </button>
-            <button class="btn--tiny btn--increase-servings">
+            <button class="btn--tiny btn--update-servings" data-update-to="${this._data.servings + 1}">
               <svg>
                 <use href="${0, _iconsSvgDefault.default}#icon-plus-circle"></use>
               </svg>
